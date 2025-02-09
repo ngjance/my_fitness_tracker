@@ -42,4 +42,4 @@ one rep max (1RM) is the maximum weight a person can lift for one repetition of 
 ### Nutrition
 1. This page allows you to add a meal of your meal.
 
-2. It is in the pipeline of future MVPs that you will be able to view your meal history.
+2. It is in the pipeline of future MVPs that you will be able to view your meal history.# my_fitness_tracker
