@@ -118,7 +118,7 @@ else:
                     st.write(fig)
 
                 # Add Workouts
-                elif sess_action == "Add Workouts":
+                elif sess_action == "Add Workout":
                     st.write("## Add New Workout Session")
 
                     session_date = st.date_input("Select Date")
@@ -142,7 +142,7 @@ else:
                         st.rerun()
 
                 # Edit/Delete Workouts
-                elif sess_action == "Edit/Delete Workouts":
+                elif sess_action == "Edit/Delete Workout":
                     st.write("### Edit/Delete Workout")
                     workout_to_edit = st.selectbox("Select a workout to edit/delete",session_data["exercise"].unique())
                     selected_workout = session_data[session_data["exercise"] == workout_to_edit].iloc[0]
