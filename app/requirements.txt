@@ -1,0 +1,6 @@
+numpy
+pandas
+plotly
+bcrypt
+streamlit
+firebase_admin
