@@ -9,6 +9,7 @@ from datetime import datetime
 import streamlit_authenticator as stauth
 import bcrypt
 import time
+import json
 
 # Initialize Firebase
 firebase_secrets = json.loads(st.secrets["firebase"])
