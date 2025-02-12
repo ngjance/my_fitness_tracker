@@ -1,19 +1,21 @@
 import streamlit as st
 import pandas as pd
 import numpy as np
+import plotly.express as px
 import plotly.graph_objects as go
 import plotly.figure_factory as ff
 import firebase_admin
-from firebase_admin import credentials, firestore, storage
+from firebase_admin import credentials, firestore, storage, initialize_app
 from datetime import datetime
 import streamlit_authenticator as stauth
 import bcrypt
 import time
 
 # Initialize Firebase
-cred = credentials.Certificate("your_firebase_service_account.json")
+firebase_secrets = json.loads(st.secrets["firebase"])
+cred = credentials.Certificate("firebase_secrets")
 if not firebase_admin._apps:
-    firebase_admin.initialize_app(cred)
+    initialize_app(cred)
 db = firestore.client()
 storage_client = storage.bucket("fitness-tracker-c51bf.firebasestorage.app")
 
