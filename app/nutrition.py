@@ -14,7 +14,7 @@ import json
 
 # Initialize Firebase
 firebase_secrets = st.secrets["firebase"]
-cred = credentials.Certificate("firebase_secrets")
+
 if not firebase_admin._apps:
     cred = credentials.Certificate({
         "type": firebase_secrets["type"],
