@@ -5,4 +5,3 @@ bcrypt
 streamlit
 firebase_admin
 streamlit_authenticator
-time
