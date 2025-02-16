@@ -66,27 +66,27 @@ if not st.session_state["authenticated"]:
 
 else:
     if "authenticated" in st.session_state and st.session_state["authenticated"]:
-        username = st.session_state["username"]
-
-        # ------------------- Load Workout Data -------------------
-        session_ref = db.collection("session").where("client_id","==",username).stream()
-        session_raw = pd.DataFrame([doc.to_dict() for doc in session_ref])
-
-        #-------------------engineer data-------------------
-        # Duplicate raw df
-        session = session_raw.copy()
-        # Dropping the rows where reps are time-based
-        session = session[session["rep"].str.contains("s") == False]
-        # converting the string to datetime format
-        session["sess_date"] = pd.to_datetime(session["sess_date"],format="%d/%m/%Y")
-        # Convert "rep" to float64
-        session.rep = session.rep.astype('float64')
-        # Add 'One Rep Max' column to session
-        session["one_rm"] = session["load_kg"] * (1 + 0.0333 * session["rep"])
-        rm = session.groupby(["client_id","sess_date","exercise"])[["one_rm"]].mean().reset_index()
+        username = st.session_state["username"]        
         
         # ------------------- View as Client -------------------
         if not username == "admin":
+
+            # ------------------- Load Workout Data -------------------
+            session_ref = db.collection("session").where("client_id","==",username).stream()
+            session_raw = pd.DataFrame([doc.to_dict() for doc in session_ref])
+    
+            #-------------------engineer data-------------------
+            # Duplicate raw df
+            session = session_raw.copy()
+            # Dropping the rows where reps are time-based
+            session = session[session["rep"].str.contains("s") == False]
+            # converting the string to datetime format
+            session["sess_date"] = pd.to_datetime(session["sess_date"],format="%d/%m/%Y")
+            # Convert "rep" to float64
+            session.rep = session.rep.astype('float64')
+            # Add 'One Rep Max' column to session
+            session["one_rm"] = session["load_kg"] * (1 + 0.0333 * session["rep"])
+            rm = session.groupby(["client_id","sess_date","exercise"])[["one_rm"]].mean().reset_index()
 
             if not session.empty:
                 st.metric(label="**Sessions Done**", value= session['sess_date'].nunique(),delta=None,delta_color="normal",help=None,
@@ -130,20 +130,35 @@ else:
             clients = [doc.to_dict() for doc in clients_ref]
             total_clients = len(clients)
 
+            # ------------------- Load Workout Data -------------------
             sessions_ref = db.collection("session").stream()
-            sessions = pd.DataFrame([doc.to_dict() for doc in sessions_ref])
-            sessions["sess_date"] = pd.to_datetime(sessions["sess_date"])
+            sessions_raw = pd.DataFrame([doc.to_dict() for doc in sessions_ref])
+   
+            #-------------------engineer data-------------------
+            # Duplicate raw df
+            session = sessions_raw.copy()
+            # Dropping the rows where reps are time-based
+            session = session[session["rep"].str.contains("s") == False]
+            # converting the string to datetime format
+            session["sess_date"] = pd.to_datetime(session["sess_date"],format="%d/%m/%Y")
+            # Convert "rep" to float64
+            session.rep = session.rep.astype('float64')
+            # Add 'One Rep Max' column to session
+            session["one_rm"] = session["load_kg"] * (1 + 0.0333 * session["rep"])
+            rm = session.groupby(["client_id","sess_date","exercise"])[["one_rm"]].mean().reset_index()
+            
+            session["sess_date"] = pd.to_datetime(session["sess_date"])
             current_month = datetime.today().month
             last_month = (datetime.today().replace(day=1) - pd.DateOffset(days=1)).strftime('%Y-%m')
             current_year = datetime.today().year
-            active_clients = sessions[
-                (sessions["sess_date"].dt.month == current_month) & (sessions["sess_date"].dt.year == current_year)][
+            active_clients = session[
+                (session["sess_date"].dt.month == current_month) & (session["sess_date"].dt.year == current_year)][
                 "client_id"].unique()
             total_active_clients = len(active_clients)
-            active_clients_last_month = sessions[sessions["sess_date"].dt.strftime('%Y-%m') == last_month][
+            active_clients_last_month = session[session["sess_date"].dt.strftime('%Y-%m') == last_month][
                 "client_id"].nunique()
 
-            sessions_per_client = sessions[sessions["client_id"].isin(active_clients)].groupby("client_id").size()
+            sessions_per_client = session[session["client_id"].isin(active_clients)].groupby("client_id").size()
 
             # st.metric(label="### **Total Clients**",value=total_clients,delta=None,delta_color="normal",
             #           help=None,
