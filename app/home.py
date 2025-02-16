@@ -170,7 +170,7 @@ else:
                 value=total_clients,
                 title={
                     "text": "Total Clients<span style='font-size:0.8em;color:black'></span>"},
-                domain={'x': [0,0.5],'y': [0.6, 0.5]}))
+                domain={'x': [0,0.5],'y': [0.6, 1]}))
 
             fig.add_trace(go.Indicator(
                 mode="number+delta",
@@ -178,7 +178,7 @@ else:
                 title={
                     "text": "MTD Active Clients<span style='font-size:0.8em;color:black'></span>"},
                 delta={'reference': active_clients_last_month,'relative': True},
-                domain={'x': [0, 0.5], 'y': [0, 1]}))
+                domain={'x': [0, 0.5], 'y': [0, 0.5]}))
 
             st.write(fig)
 
