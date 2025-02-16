@@ -30,7 +30,7 @@ if not firebase_admin._apps:
     })
     firebase_admin.initialize_app(cred)
 db = firestore.client()
-storage_client = storage.bucket("fitness-tracker-c51bf.appspot.com")
+storage_client = storage.bucket("fitness-tracker-c51bf.firebasestorage.app")
 
 # Function to verify password
 def verify_password(plain_password,hashed_password):
