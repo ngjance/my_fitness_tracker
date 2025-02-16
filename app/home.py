@@ -151,14 +151,14 @@ else:
             current_month = datetime.today().month
             last_month = (datetime.today().replace(day=1) - pd.DateOffset(days=1)).strftime('%Y-%m')
             current_year = datetime.today().year
-            active_clients = session[
-                (session["sess_date"].dt.month == current_month) & (session["sess_date"].dt.year == current_year)][
-                "client_id"].unique()
+            active_sess = session[
+                (session["sess_date"].dt.month == current_month) & (session["sess_date"].dt.year == current_year)]
+            active_clients = active_sess["client_id"].unique()
             total_active_clients = len(active_clients)
             active_clients_last_month = session[session["sess_date"].dt.strftime('%Y-%m') == last_month][
                 "client_id"].nunique()
             st.write(active_clients)
-            sessions_per_client = session[session["client_id"].isin(active_clients)].groupby("client_id")[["sess_date"]].nunique()
+            sessions_per_client = active_sess[["sess_date"]].nunique()
 
             # st.metric(label="### **Total Clients**",value=total_clients,delta=None,delta_color="normal",
             #           help=None,
