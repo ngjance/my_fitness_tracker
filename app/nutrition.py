@@ -28,9 +28,9 @@ if not firebase_admin._apps:
         "auth_provider_x509_cert_url": firebase_secrets["auth_provider_x509_cert_url"],
         "client_x509_cert_url": firebase_secrets["client_x509_cert_url"]
     })
-    firebase_admin.initialize_app(cred, {"storageBucket": "fitness-tracker-c51bf.firebasestorage.app"})
+    firebase_admin.initialize_app(cred)
 db = firestore.client()
-storage_client = storage.bucket()
+storage_client = storage.bucket("fitness-tracker-c51bf.firebasestorage.app")
 
 # Function to verify password
 def verify_password(plain_password,hashed_password):
