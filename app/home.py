@@ -157,7 +157,7 @@ else:
             total_active_clients = len(active_clients)
             active_clients_last_month = session[session["sess_date"].dt.strftime('%Y-%m') == last_month][
                 "client_id"].nunique()
-
+            st.write(active_clients)
             sessions_per_client = session[session["client_id"].isin(active_clients)].groupby("client_id")["sess_date"].nunique()
 
             # st.metric(label="### **Total Clients**",value=total_clients,delta=None,delta_color="normal",
