@@ -108,20 +108,20 @@ else:
 
                     colorscale = [[0,'#4d004c'],[.5,'#ffffff'],[1,'#ffffff']]
 
-                st.write("### Exercise Progress")
-                exercise_table = rm[(rm['client_id'] == username)]
-                exercise_selected = st.selectbox("Select a exercise",exercise_table["exercise"].unique())
-                exercise_history = exercise_table[exercise_table["exercise"] == exercise_selected]
-                exercise_history = exercise_history.sort_values(by="sess_date",ascending=False)
-
-                fig = ff.create_table(exercise_history,colorscale=colorscale)
-                fig.layout.width = 1400
-                st.write(fig)
-
-                # Line chart for one rep max progression
-                fig = px.line(exercise_history.sort_values("sess_date"),x="sess_date",y="one_rm",
-                              title=f"{exercise_selected} - One Rep Max Progress")
-                st.plotly_chart(fig)
+                    st.write("### Exercise Progress")
+                    exercise_table = rm[(rm['client_id'] == username)]
+                    exercise_selected = st.selectbox("Select a exercise",exercise_table["exercise"].unique())
+                    exercise_history = exercise_table[exercise_table["exercise"] == exercise_selected]
+                    exercise_history = exercise_history.sort_values(by="sess_date",ascending=False)
+    
+                    fig = ff.create_table(exercise_history,colorscale=colorscale)
+                    fig.layout.width = 1400
+                    st.write(fig)
+    
+                    # Line chart for one rep max progression
+                    fig = px.line(exercise_history.sort_values("sess_date"),x="sess_date",y="one_rm",
+                                  title=f"{exercise_selected} - One Rep Max Progress")
+                    st.plotly_chart(fig)
 
 
         # ------------------- View as Admin -------------------
