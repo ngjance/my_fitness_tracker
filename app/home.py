@@ -157,7 +157,7 @@ else:
             total_active_clients = len(active_clients)
             active_clients_last_month = session[session["sess_date"].dt.strftime('%Y-%m') == last_month][
                 "client_id"].nunique()
-            st.write(active_clients)
+            
             sessions_per_client = active_sess.groupby("client_id")[["sess_date"]].nunique()
 
             # st.metric(label="### **Total Clients**",value=total_clients,delta=None,delta_color="normal",
@@ -170,7 +170,7 @@ else:
                 value=total_clients,
                 title={
                     "text": "Total Clients<span style='font-size:0.8em;color:black'></span>"},
-                domain={'x': [0,0.5],'y': [0, 0.5]}))
+                domain={'x': [0,0.5],'y': [0.6, 0.5]}))
 
             fig.add_trace(go.Indicator(
                 mode="number+delta",
@@ -178,7 +178,7 @@ else:
                 title={
                     "text": "MTD Active Clients<span style='font-size:0.8em;color:black'></span>"},
                 delta={'reference': active_clients_last_month,'relative': True},
-                domain={'x': [0, 0.5], 'y': [0.6, 1]}))
+                domain={'x': [0, 0.5], 'y': [0, 1]}))
 
             st.write(fig)
 
