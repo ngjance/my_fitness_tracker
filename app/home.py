@@ -180,7 +180,7 @@ else:
                 delta={'reference': active_clients_last_month,'relative': True},
                 domain={'x': [0, 0.5], 'y': [0.5, 1]}))
 
-            fig.show()
+            st.write(fig)
 
             # st.write(f"Total Clients: {total_clients}")
             # st.write(f"MTD Active Clients: {total_active_clients}")
