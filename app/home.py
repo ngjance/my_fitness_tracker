@@ -68,25 +68,25 @@ else:
     if "authenticated" in st.session_state and st.session_state["authenticated"]:
         username = st.session_state["username"]
 
+        # ------------------- Load Workout Data -------------------
+        session_ref = db.collection("session").where("client_id","==",username).stream()
+        session_raw = pd.DataFrame([doc.to_dict() for doc in session_ref])
+
+        #-------------------engineer data-------------------
+        # Duplicate raw df
+        session = session_raw.copy()
+        # Dropping the rows where reps are time-based
+        session = session[session["rep"].str.contains("s") == False]
+        # converting the string to datetime format
+        session["sess_date"] = pd.to_datetime(session["sess_date"],format="%d/%m/%Y")
+        # Convert "rep" to float64
+        session.rep = session.rep.astype('float64')
+        # Add 'One Rep Max' column to session
+        session["one_rm"] = session["load_kg"] * (1 + 0.0333 * session["rep"])
+        rm = session.groupby(["client_id","sess_date","exercise"])[["one_rm"]].mean().reset_index()
+        
         # ------------------- View as Client -------------------
         if not username == "admin":
-
-            # ------------------- Load Workout Data -------------------
-            session_ref = db.collection("session").where("client_id","==",username).stream()
-            session_raw = pd.DataFrame([doc.to_dict() for doc in session_ref])
-
-            #-------------------engineer data-------------------
-            # Duplicate raw df
-            session = session_raw.copy()
-            # Dropping the rows where reps are time-based
-            session = session[session["rep"].str.contains("s") == False]
-            # converting the string to datetime format
-            session["sess_date"] = pd.to_datetime(session["sess_date"],format="%d/%m/%Y")
-            # Convert "rep" to float64
-            session.rep = session.rep.astype('float64')
-            # Add 'One Rep Max' column to session
-            session["one_rm"] = session["load_kg"] * (1 + 0.0333 * session["rep"])
-            rm = session.groupby(["client_id","sess_date","exercise"])[["one_rm"]].mean().reset_index()
 
             if not session.empty:
                 st.metric(label="**Sessions Done**", value= session['sess_date'].nunique(),delta=None,delta_color="normal",help=None,
