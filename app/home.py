@@ -147,7 +147,7 @@ else:
             session["one_rm"] = session["load_kg"] * (1 + 0.0333 * session["rep"])
             rm = session.groupby(["client_id","sess_date","exercise"])[["one_rm"]].mean().reset_index()
             
-            session["sess_date"] = pd.to_datetime(session["sess_date"])
+            # session["sess_date"] = pd.to_datetime(session["sess_date"])
             current_month = datetime.today().month
             last_month = (datetime.today().replace(day=1) - pd.DateOffset(days=1)).strftime('%Y-%m')
             current_year = datetime.today().year
