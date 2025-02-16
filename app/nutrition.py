@@ -87,11 +87,3 @@ else:
                     })
                     st.success("Meal uploaded successfully!")
                     st.rerun()
-
-                try:
-                    bucket = storage_client.bucket()
-                    blob = bucket.blob(f"nutrition/{username}/{file_name}")
-                    blob.upload_from_string(file.read(), content_type=file.type)
-                    st.success("Photo uploaded successfully!")
-                except Exception as e:
-                    st.error(f"Upload failed: {str(e)}")
