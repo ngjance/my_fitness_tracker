@@ -158,7 +158,7 @@ else:
             active_clients_last_month = session[session["sess_date"].dt.strftime('%Y-%m') == last_month][
                 "client_id"].nunique()
 
-            sessions_per_client = session[session["client_id"].isin(active_clients)].groupby("client_id").nunique()
+            sessions_per_client = session[session["client_id"].isin(active_clients)].groupby(["client_id","sess_date"]).nunique()
 
             # st.metric(label="### **Total Clients**",value=total_clients,delta=None,delta_color="normal",
             #           help=None,
@@ -178,7 +178,7 @@ else:
                 title={
                     "text": "MTD Active Clients<span style='font-size:0.8em;color:black'></span>"},
                 delta={'reference': active_clients_last_month,'relative': True},
-                domain={'x': [0, 0.5], 'y': [0.5, 1]}))
+                domain={'x': [0, 0.5], 'y': [0.6, 1]}))
 
             st.write(fig)
 
