@@ -87,6 +87,7 @@ else:
 
             if admin_action == "Add Client":
                 with st.form("Add Client Form"):
+                    client_id = st.text_input("Client ID")
                     first_name = st.text_input("First Name")
                     last_name = st.text_input("Last Name")
                     dob = st.date_input("Date of Birth")
@@ -95,6 +96,7 @@ else:
                     submitted = st.form_submit_button("Add Client")
                     if submitted:
                         db.collection("client").add({
+                            "client_id": client_id,
                             "first_name": first_name,
                             "last_name": last_name,
                             "dob": dob.strftime('%Y-%m-%d'),
@@ -116,7 +118,7 @@ else:
                     source = st.text_input("Source",client_details["source"])
                     submitted = st.form_submit_button("Update Client")
                     if submitted:
-                        db.collection("client").document(client_doc_id).update({
+                        db.collection("client").document(client_doc_id).update({            
                             "first_name": first_name,
                             "last_name": last_name,
                             "dob": dob.strftime('%Y-%m-%d'),
