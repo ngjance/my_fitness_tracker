@@ -68,13 +68,14 @@ else:
     if "authenticated" in st.session_state and st.session_state["authenticated"]:
         username = st.session_state["username"]
         if not username == "admin":
+            client_ref = db.collection("client").where("client_id","==",username).stream()
+            client_data = {doc.id: doc.to_dict() for doc in client_ref}
+
             session_ref = db.collection("session").where("client_id","==",username).stream()
-            session_raw = pd.DataFrame([doc.to_dict() for doc in session_ref])
+            session = pd.DataFrame([doc.to_dict() | {"id": doc.id} for doc in session_ref])
 
             # ------------------- Engineer Data -------------------
 
-            # Make a copy of raw data
-            session = session_raw.copy()
             # Dropping the rows where reps are time-based
             session = session[session["rep"].str.contains("s") == False]
             # converting the string to datetime format
@@ -91,10 +92,11 @@ else:
                 st.sidebar.title("Session Logs")
                 sess_action = st.sidebar.radio("To View",["Session Details", "Add Workout", "Edit/Delete Workout"])
 
-                session = session[['client_id','sess_date','exercise','set','rep','load_kg']]
+                session = session[['id','client_id','sess_date','exercise','set','rep','load_kg']]
                 sess_table = session[(session['client_id'] == username)].sort_values('sess_date',ascending=False)
                 session_selected = st.selectbox("Select a session date",sess_table["sess_date"].unique())
                 session_data = sess_table[sess_table["sess_date"] == session_selected].sort_values('sess_date', ascending=False)
+                session_dates = session["sess_date"].unique()
 
                 # Show what was done for Selected Session
                 if sess_action == "Session Details":
@@ -109,13 +111,13 @@ else:
                                    </style>
                                    """,unsafe_allow_html=True)
 
-                        colorscale = [[0,'#4d004c'],[.5,'#ffffff'],[1,'#ffffff']]
-    
-                        st.write("### Session Details")
-    
-                        fig = ff.create_table(session_data,colorscale=colorscale)
-                        fig.layout.width = 1400
-                        st.write(fig)
+                    colorscale = [[0,'#4d004c'],[.5,'#ffffff'],[1,'#ffffff']]
+
+                    st.write("### Session Details")
+
+                    fig = ff.create_table(session_data,colorscale=colorscale)
+                    fig.layout.width = 1400
+                    st.write(fig)
 
                 # Add Workouts
                 elif sess_action == "Add Workout":
@@ -145,14 +147,15 @@ else:
                 elif sess_action == "Edit/Delete Workout":
                     st.write("### Edit/Delete Workout")
                     workout_to_edit = st.selectbox("Select a workout to edit/delete",session_data["exercise"].unique())
-                    selected_workout = session_data[session_data["exercise"] == workout_to_edit].iloc[0]
+                    selected_workout = session_data[session_data["exercise"] == workout_to_edit].copy()
+                    workout_id = selected_workout.at[selected_workout.index[0],"id"]
 
-                    sets = st.number_input("Sets",min_value=1,max_value=10,value=int(selected_workout["set"]))
-                    reps = st.number_input("Reps",min_value=1,max_value=20,value=int(selected_workout["rep"]))
-                    load = st.number_input("Load (kg)",min_value=1,max_value=200,value=int(selected_workout["load_kg"]))
+                    sets = st.number_input("Sets",min_value=1,max_value=10,value=int(selected_workout["set"].iloc[0]))
+                    reps = st.number_input("Reps",min_value=1,max_value=20,value=int(selected_workout["rep"].iloc[0]))
+                    load = st.number_input("Load (kg)",min_value=0,max_value=200, value=int(selected_workout["load_kg"].iloc[0]))
 
                     if st.button("Update Workout"):
-                        db.collection("session").document(selected_workout["id"]).update({
+                        db.collection("session").document(workout_id).update({
                             "set": sets,
                             "rep": reps,
                             "load_kg": load
@@ -161,6 +164,6 @@ else:
                         st.rerun()
 
                     if st.button("Delete Workout"):
-                        db.collection("session").document(selected_workout["id"]).delete()
+                        db.collection("session").document(workout_id).delete()
                         st.success("Workout deleted successfully!")
-                        st.rerun()
+                        st.rerun()          
