@@ -64,7 +64,6 @@ if not st.session_state["authenticated"]:
 
 else:
     # ------------------- Load Data -------------------
-    # @st.cache_data
     if "authenticated" in st.session_state and st.session_state["authenticated"]:
         username = st.session_state["username"]
         if not username == "admin":
@@ -92,6 +91,7 @@ else:
                 st.sidebar.title("Session Logs")
                 sess_action = st.sidebar.radio("To View",["Session Details", "Add Workout", "Edit/Delete Workout"])
 
+                # session = session[['client_id','sess_date','exercise','set','rep','load_kg']]
                 session = session[['id','client_id','sess_date','exercise','set','rep','load_kg']]
                 sess_table = session[(session['client_id'] == username)].sort_values('sess_date',ascending=False)
                 session_selected = st.selectbox("Select a session date",sess_table["sess_date"].unique())
@@ -116,7 +116,7 @@ else:
                     st.write("### Session Details")
 
                     fig = ff.create_table(session_data,colorscale=colorscale)
-                    fig.layout.width = 1400
+                    fig.layout.width = 2000
                     st.write(fig)
 
                 # Add Workouts
@@ -129,7 +129,7 @@ else:
                     exercise_selected = st.selectbox("Select an Exercise",exercise_list)
                     sets = st.number_input("Sets",min_value=1,max_value=10,value=3)
                     reps = st.number_input("Reps",min_value=1,max_value=20,value=10)
-                    load = st.number_input("Load (kg)",min_value=1,max_value=200,value=50)
+                    load = st.number_input("Load (kg)",min_value=0,max_value=200,value=50)
 
                     if st.button("Add Workout"):
                         db.collection("session").add({
@@ -166,4 +166,4 @@ else:
                     if st.button("Delete Workout"):
                         db.collection("session").document(workout_id).delete()
                         st.success("Workout deleted successfully!")
-                        st.rerun()          
+                        st.rerun()   
