@@ -106,9 +106,7 @@ if st.session_state["authenticated"]:
             pages = {
                 "Menu": [
                     st.Page("home.py",title="Home"),
-                    st.Page("admin.py",title="Admin")
-                 ]
+                    st.Page("admin.py",title="Admin")]
             }
             pg = st.navigation(pages)
             pg.run()
-
