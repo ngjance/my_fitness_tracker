@@ -83,6 +83,7 @@ else:
             # Fetch session data
             session_ref = db.collection("session").where("client_id","==",username).stream()
             sessions = pd.DataFrame([doc.to_dict() for doc in session_ref])
+            session = session[['id','client_id','sess_date','exercise','set','rep','load_kg']]
     
             # Fetch exercise data
             exercise_ref = db.collection("exercise").stream()
@@ -132,9 +133,13 @@ else:
                         st.success("Client updated successfully!")
 
             elif admin_action == "View Client session":
-                selected_client = st.selectbox("Select Client",client_df["client_id"].unique())
-                client_session = session[session[["client_id"]] == selected_client]
-                st.write(client_df)
+                selected_client = st.selectbox("Select Client",session["client_id"].unique())
+                client_session = session[session["client_id"] == selected_client]
+                session_selected = st.selectbox("Select a session date",client_session["sess_date"].unique())
+                session_data = client_session[client_session["sess_date"] == session_selected].sort_values('sess_date',ascending=False)
+                session_data = session_data.drop(['id'],axis=1)
+                
+                st.write(session_data)
             
             elif admin_action == "Add Session":
                 client_id = st.selectbox("Client ID",client_list)
