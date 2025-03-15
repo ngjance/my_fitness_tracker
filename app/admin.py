@@ -71,19 +71,22 @@ else:
     if "authenticated" in st.session_state and st.session_state["authenticated"]:
         username = st.session_state["username"]
 
-        client_ref = db.collection("client").where("client_id","==",username).stream()
-        client_data = {doc.id: doc.to_dict() for doc in client_ref}
-        client_list = [f"{data['first_name']} {data['last_name']}" for data in client_data.values()]
-
-        session_ref = db.collection("session").where("client_id","==",username).stream()
-        sessions = pd.DataFrame([doc.to_dict() for doc in session_ref])
-
-        exercise_ref = db.collection("exercise").stream()
-        exercise_list = [doc.to_dict()["exercise"] for doc in exercise_ref]
-
         if username == "admin":
             st.sidebar.title("Admin Panel")
-            admin_action = st.sidebar.radio("Choose Actions",["Add Client","Edit Client","Add Session","Edit Session"])
+            admin_action = st.sidebar.radio("Choose Actions",["Add Client","Edit Client","View Client session","Add Session","Edit/Delete Workout"])
+
+            # Fetch client data
+            client_ref = db.collection("client").where("client_id","==",username).stream()
+            client_data = {doc.id: doc.to_dict() for doc in client_ref}
+            client_list = [f"{data['first_name']} {data['last_name']}" for data in client_data.values()]
+    
+            # Fetch session data
+            session_ref = db.collection("session").where("client_id","==",username).stream()
+            sessions = pd.DataFrame([doc.to_dict() for doc in session_ref])
+    
+            # Fetch exercise data
+            exercise_ref = db.collection("exercise").stream()
+            exercise_list = [doc.to_dict()["exercise"] for doc in exercise_ref]
 
             if admin_action == "Add Client":
                 with st.form("Add Client Form"):
@@ -99,13 +102,14 @@ else:
                             "client_id": client_id,
                             "first_name": first_name,
                             "last_name": last_name,
-                            "dob": dob.strftime('%Y-%m-%d'),
+                            "dob": dob.strftime('%d/%m/%Y'),
                             "program": program,
                             "source": source
                         })
                         st.success("Client added successfully!")
 
             elif admin_action == "Edit Client":
+
                 selected_client = st.selectbox("Select Client",client_list)
                 client_doc_id = list(client_data.keys())[client_list.index(selected_client)]
                 client_details = client_data[client_doc_id]
@@ -113,50 +117,7 @@ else:
                 with st.form("Edit Client Form"):
                     first_name = st.text_input("First Name",client_details["first_name"])
                     last_name = st.text_input("Last Name",client_details["last_name"])
-                    dob = st.date_input("Date of Birth",datetime.strptime(client_details["dob"],'%Y-%m-%d'))
-                    program = st.text_input("Program",client_details["program"])
-                    source = st.text_input("Source",client_details["source"])
-                    submitted = st.form_submit_button("Update Client")
-                    if submitted:
-                        db.collection("client").document(client_doc_id).update({            
-                            "first_name": first_name,
-                            "last_name": last_name,
-                            "dob": dob.strftime('%Y-%m-%d'),
-                            "program": program,
-                            "source": source
-                        })
-                        st.success("Client updated successfully!")
-
-            elif admin_action == "Add Session":
-
-                with st.form("Add Session Form"):
-                    client_id = st.selectbox("Client ID",client_list)
-                    sess_date = st.date_input("Session Date")
-                    exercise = st.selectbox("Select an Exercise",exercise_list)
-                    set = st.number_input("Sets",min_value=1,max_value=10,value=3)
-                    rep = st.number_input("Reps",min_value=1,max_value=20,value=10)
-                    load_kg = st.number_input("Load (kg)",min_value=1,max_value=200,value=50)
-                    submitted = st.form_submit_button("Add Session")
-                    if submitted:
-                        db.collection("session").add({
-                            "client_id": client_id,
-                            "sess_date": sess_date.strftime('%d/%m/%Y'),
-                            "exercise": exercise,
-                            "set": set,
-                            "rep": rep,
-                            "load_kg": load_kg
-                        })
-                        st.success("Session added successfully!")
-
-            elif admin_action == "Edit Session":
-                selected_client = st.selectbox("Select Client",client_list)
-                client_doc_id = list(client_data.keys())[client_list.index(selected_client)]
-                client_details = client_data[client_doc_id]
-
-                with st.form("Edit Session Form"):
-                    first_name = st.text_input("First Name",client_details["first_name"])
-                    last_name = st.text_input("Last Name",client_details["last_name"])
-                    dob = st.date_input("Date of Birth",datetime.strptime(client_details["dob"],'%Y-%m-%d'))
+                    dob = st.date_input("Date of Birth",datetime.strptime(client_details["dob"],'%d/%m/%Y'))
                     program = st.text_input("Program",client_details["program"])
                     source = st.text_input("Source",client_details["source"])
                     submitted = st.form_submit_button("Update Client")
@@ -164,8 +125,63 @@ else:
                         db.collection("client").document(client_doc_id).update({
                             "first_name": first_name,
                             "last_name": last_name,
-                            "dob": dob.strftime('%Y-%m-%d'),
+                            "dob": dob.strftime('%d/%m/%Y'),
                             "program": program,
                             "source": source
                         })
                         st.success("Client updated successfully!")
+
+            elif admin_action == "View Client session":
+                selected_client = st.selectbox("Select Client",client_df["client_id"].unique())
+                client_session = session[session[["client_id"]] == selected_client]
+                st.write(client_df)
+            
+            elif admin_action == "Add Session":
+                client_id = st.selectbox("Client ID",client_list)
+                sess_date = st.date_input("Session Date")
+                exercise = st.selectbox("Select an Exercise",exercise_list)
+                with st.form("Add Session Form"):
+                    sess_date = st.date_input("Session Date")
+                    exercise = st.selectbox("Select an Exercise",exercise_list)
+                    sets = st.number_input("Sets",min_value=1,max_value=10,value=3)
+                    reps = st.number_input("Reps",min_value=1,max_value=20,value=10)
+                    load_kg = st.number_input("Load (kg)",min_value=0,max_value=200,value=50)
+                    submitted = st.form_submit_button("Add Workout")
+                    if submitted:
+                        db.collection("session").add({
+                            "client_id": client_id,
+                            "sess_date": sess_date.strftime('%d/%m/%Y'),
+                            "exercise": exercise,
+                            "set": sets,
+                            "rep": reps,
+                            "load_kg": load_kg
+                        })
+                        st.success("Workout added successfully!")
+
+           elif admin_action == "Edit/Delete Workout":
+                st.write("### Edit/Delete Client's Workout")
+                selected_client = st.selectbox("Select Client",session["client_id"].unique())
+                client_session = session[session["client_id"] == selected_client]
+                session_selected = st.selectbox("Select a session date",client_session["sess_date"].unique())
+                session_data = client_session[client_session["sess_date"] == session_selected].sort_values('sess_date',ascending=False)
+                workout_to_edit = st.selectbox("Select a workout to edit/delete",session_data["exercise"].unique())
+                selected_workout = session_data[session_data["exercise"] == workout_to_edit].copy()
+                workout_id = selected_workout.at[selected_workout.index[0],"id"]
+
+                sets = st.number_input("Sets",min_value=1,max_value=10,value=int(selected_workout["set"].iloc[0]))
+                reps = st.number_input("Reps",min_value=1,max_value=20,value=int(selected_workout["rep"].iloc[0]))
+                load = st.number_input("Load (kg)",min_value=0,max_value=200,value=int(selected_workout["load_kg"].iloc[0]))
+
+                if st.button("Update Workout"):
+                    db.collection("session").document(workout_id).update({
+                        "set": sets,
+                        "rep": reps,
+                        "load_kg": load
+                    })
+                    st.success("Workout updated successfully!")
+                    st.rerun()
+
+                if st.button("Delete Workout"):
+                    db.collection("session").document(workout_id).delete()
+                    st.success("Workout deleted successfully!")
+                    st.rerun()
