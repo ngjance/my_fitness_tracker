@@ -32,8 +32,6 @@ if not firebase_admin._apps:
 db = firestore.client()
 storage_client = storage.bucket("fitness-tracker-c51bf.firebasestorage.app")
 
-# st.title("My Fitness Tracker")
-
 # Function to verify password
 def verify_password(plain_password,hashed_password):
     return bcrypt.checkpw(plain_password.encode(),hashed_password.encode())
@@ -76,15 +74,16 @@ else:
             admin_action = st.sidebar.radio("Choose Actions",["Add Client","Edit Client","View Client session","Add Session","Edit/Delete Workout"])
 
             # Fetch client data
-            client_ref = db.collection("client").where("client_id","==",username).stream()
+            client_ref = db.collection("client").stream()
             client_data = {doc.id: doc.to_dict() for doc in client_ref}
             client_list = [f"{data['first_name']} {data['last_name']}" for data in client_data.values()]
-    
+            client_docs = list(client_ref)
+
             # Fetch session data
-            session_ref = db.collection("session").where("client_id","==",username).stream()
-            sessions = pd.DataFrame([doc.to_dict() for doc in session_ref])
+            session_ref = db.collection("session").stream()
+            session = pd.DataFrame([doc.to_dict() | {"id": doc.id} for doc in session_ref])
             session = session[['id','client_id','sess_date','exercise','set','rep','load_kg']]
-    
+
             # Fetch exercise data
             exercise_ref = db.collection("exercise").stream()
             exercise_list = [doc.to_dict()["exercise"] for doc in exercise_ref]
@@ -110,6 +109,9 @@ else:
                         st.success("Client added successfully!")
 
             elif admin_action == "Edit Client":
+                # client_ref = db.collection("client").where("client_id","==",username).stream()
+                # client_data = {doc.id: doc.to_dict() for doc in client_ref}
+                # client_list = [f"{data['first_name']} {data['last_name']}" for data in client_data.values()]
 
                 selected_client = st.selectbox("Select Client",client_list)
                 client_doc_id = list(client_data.keys())[client_list.index(selected_client)]
@@ -138,13 +140,14 @@ else:
                 session_selected = st.selectbox("Select a session date",client_session["sess_date"].unique())
                 session_data = client_session[client_session["sess_date"] == session_selected].sort_values('sess_date',ascending=False)
                 session_data = session_data.drop(['id'],axis=1)
-                
+
                 st.write(session_data)
-            
+                
             elif admin_action == "Add Session":
                 client_id = st.selectbox("Client ID",client_list)
                 sess_date = st.date_input("Session Date")
                 exercise = st.selectbox("Select an Exercise",exercise_list)
+                
                 with st.form("Add Session Form"):
                     sess_date = st.date_input("Session Date")
                     exercise = st.selectbox("Select an Exercise",exercise_list)
@@ -163,7 +166,7 @@ else:
                         })
                         st.success("Workout added successfully!")
 
-           elif admin_action == "Edit/Delete Workout":
+            elif admin_action == "Edit/Delete Workout":
                 st.write("### Edit/Delete Client's Workout")
                 selected_client = st.selectbox("Select Client",session["client_id"].unique())
                 client_session = session[session["client_id"] == selected_client]
