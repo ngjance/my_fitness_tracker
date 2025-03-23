@@ -144,11 +144,8 @@ else:
                 st.write(session_data)
                 
             elif admin_action == "Add Session":
-                client_id = st.selectbox("Client ID",client_list)
-                sess_date = st.date_input("Session Date")
-                exercise = st.selectbox("Select an Exercise",exercise_list)
-                
                 with st.form("Add Session Form"):
+                    client_id = st.selectbox("Client ID", session["client_id"].unique())
                     sess_date = st.date_input("Session Date")
                     exercise = st.selectbox("Select an Exercise",exercise_list)
                     sets = st.number_input("Sets",min_value=1,max_value=10,value=3)
