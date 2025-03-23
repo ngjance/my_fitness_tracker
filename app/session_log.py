@@ -115,7 +115,7 @@ else:
 
                     st.write("### Session Details")
 
-                    fig = ff.create_table(session_data,colorscale=colorscale)
+                    fig = ff.create_table(session_data)
                     fig.layout.width = 2000
                     st.write(fig)
 
