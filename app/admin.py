@@ -88,6 +88,17 @@ else:
             exercise_ref = db.collection("exercise").stream()
             exercise_list = [doc.to_dict()["exercise"] for doc in exercise_ref]
 
+            # ------------------- Engineer Data -------------------
+            # Dropping the rows where reps are time-based
+            session = session[session["rep"].str.contains("s") == False]
+            # converting the string to datetime format
+            session["sess_date"] = pd.to_datetime(session["sess_date"],format="%d/%m/%Y")
+            # Convert "rep" to float64
+            session.rep = session.rep.astype('float64')
+            # Add 'One Rep Max' column to session
+            session["one_rm"] = session["load_kg"] * (1 + 0.0333 * session["rep"])
+            rm = session.groupby(["client_id","sess_date","exercise"])[["one_rm"]].mean().reset_index()
+
             if admin_action == "Add Client":
                 with st.form("Add Client Form"):
                     client_id = st.text_input("Client ID")
