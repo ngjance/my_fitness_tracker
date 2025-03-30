@@ -115,7 +115,8 @@ else:
 
                     st.write("### Session Details")
 
-                    fig = ff.create_table(session_data)
+                    session_data_drop_id = session_data.drop(['id'], axis=1)
+                    fig = ff.create_table(session_data_drop_id,colorscale=colorscale)
                     fig.layout.width = 2000
                     st.write(fig)
 
