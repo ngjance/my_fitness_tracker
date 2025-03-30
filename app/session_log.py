@@ -76,7 +76,7 @@ else:
             # ------------------- Engineer Data -------------------
 
             # Dropping the rows where reps are time-based
-            session = session[session["rep"].str.contains("s") == False]
+            session = session = session[~session["rep"].astype(str).str.contains("s", na=False)]
             # converting the string to datetime format
             session["sess_date"] = pd.to_datetime(session["sess_date"],format="%d/%m/%Y")
             # Convert "rep" to float64
