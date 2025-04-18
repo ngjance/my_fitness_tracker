@@ -44,7 +44,11 @@ if "authenticated" not in st.session_state:
 
 # Fetch user credentials from Firestore
 users_ref = db.collection("credentials").stream()
-credentials_dict = {user.to_dict()["username"]: user.to_dict() for user in users_ref}
+credentials_dict = {}
+for user in users_ref:
+    user_data = user.to_dict()
+    if "username" in user_data:
+        credentials_dict[user_data["username"]] = user_data
 
 # If user is already logged in, skip login screen
 if st.session_state["authenticated"]:
