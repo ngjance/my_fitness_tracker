@@ -13,7 +13,6 @@ import time
 import json
 import gspread
 from google.oauth2.service_account import Credentials
-from st_aggrid import AgGrid, GridOptionsBuilder, GridUpdateMode
 
 # Initialize Firebase
 firebase_secrets = st.secrets["firebase"]
