@@ -120,8 +120,7 @@ else:
                 df = df.fillna(0)
                 df = df.replace(to_replace='N/A', value=0)
                 df["Weight (g)"] = pd.to_numeric(df["Weight (g)"], errors="coerce").fillna(0)
-                # st.dataframe(df)
-
+                
                 # Build grid options
                 gb = GridOptionsBuilder.from_dataframe(df)
                 gb.configure_default_column(filter=True, sortable=True, resizable=True)  # ✅ Enable filters
@@ -142,16 +141,6 @@ else:
                     st.write("### Selected Items")
                     selected_df = pd.DataFrame(selected)
                     st.dataframe(selected_df)
-                    st.write(selected_df.dtypes)
-                    for col in selected_df.columns:
-                        if selected_df[col].dtype == 'int64':
-                            try:
-                                selected_df[col] = selected_df[col].astype('float64')
-                            except ValueError:
-                                st.write(selected_df.dtypes)
-                    st.write(selected_df.dtypes)
-                    # selected_df.Weight (g) = selected_df.Weight (g).astype('float64')
-
 
                     # Ask user to input consumed weight for each item
                     weight_inputs = []
