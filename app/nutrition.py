@@ -12,7 +12,7 @@ import bcrypt
 import time
 import json
 import gspread
-from google.oauth2.service_account import Credentials
+from oauth2client.service_account import ServiceAccountCredentials
 
 # Initialize Firebase
 firebase_secrets = st.secrets["firebase"]
@@ -103,10 +103,8 @@ else:
             if sess_action == "Food Table":
                 # Google Sheets credentials and URL setup
                 gs_scope = ["https://www.googleapis.com/auth/spreadsheets", "https://www.googleapis.com/auth/drive"]
-                gs_creds = Credentials.from_service_account_file(
-                    "google_sheets_credentials.json",
-                    scopes=gs_scope
-                )
+                creds_dict = st.secrets["gcp_service_account"]
+                gs_creds = ServiceAccountCredentials.from_json_keyfile_dict(creds_dict, scope)
                 gc = gspread.authorize(gs_creds)
 
                 sheet_url = "https://docs.google.com/spreadsheets/d/1nfQfBRdZkBcI7ZISrLu1ko-MYmizOTa_EV5panWtJjI"
