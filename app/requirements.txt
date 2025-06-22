@@ -6,4 +6,6 @@ streamlit
 firebase_admin
 streamlit_authenticator
 gspread
-st_aggrid
+AgGrid
+GridOptionsBuilder
+GridUpdateMode
