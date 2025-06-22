@@ -13,6 +13,7 @@ import time
 import json
 import gspread
 from oauth2client.service_account import ServiceAccountCredentials
+from st_aggrid import AgGrid, GridOptionsBuilder, GridUpdateMode
 
 # Initialize Firebase
 firebase_secrets = st.secrets["firebase"]
@@ -119,5 +120,88 @@ else:
                 df = df.fillna(0)
                 df = df.replace(to_replace='N/A', value=0)
                 df["Weight (g)"] = pd.to_numeric(df["Weight (g)"], errors="coerce").fillna(0)
-                st.dataframe(df)
+                # st.dataframe(df)
+
+                # Build grid options
+                gb = GridOptionsBuilder.from_dataframe(df)
+                gb.configure_default_column(filter=True, sortable=True, resizable=True)  # ✅ Enable filters
+                gb.configure_selection(selection_mode="multiple", use_checkbox=True)     # ✅ Enable checkbox
+                gb.configure_pagination(paginationAutoPageSize=False, paginationPageSize=15)  # Optional: pagination
+                gb.configure_side_bar()  # optional: adds filter/sort panel
+                grid_options = gb.build()
+
+                # Render interactive grid
+                grid_response = AgGrid(df,
+                                       gridOptions=grid_options,
+                                       update_mode=GridUpdateMode.SELECTION_CHANGED,
+                                       height=500, width='100%',
+                                       fit_columns_on_grid_load=True, theme='streamlit')  # Optional: "alpine", "balham", "material"
+                # Get selected rows
+                selected = grid_response['selected_rows']
+                if selected is not None and len(selected) > 0:
+                    st.write("### Selected Items")
+                    selected_df = pd.DataFrame(selected)
+                    st.dataframe(selected_df)
+                    st.write(selected_df.dtypes)
+                    for col in selected_df.columns:
+                        if selected_df[col].dtype == 'int64':
+                            try:
+                                selected_df[col] = selected_df[col].astype('float64')
+                            except ValueError:
+                                st.write(selected_df.dtypes)
+                    st.write(selected_df.dtypes)
+                    # selected_df.Weight (g) = selected_df.Weight (g).astype('float64')
+
+
+                    # Ask user to input consumed weight for each item
+                    weight_inputs = []
+                    for i, row in selected_df.iterrows():
+                        try:
+                            default_weight = int(float(row["Weight (g)"])) if row["Weight (g)"] not in [None, "", "N/A"] else 100
+                        except (ValueError, TypeError):
+                            default_weight = 100
+                        weight = st.number_input(
+                            f"Enter weight (g) for {row['Item']} ({row['Brand']})",
+                            min_value=0,
+                            value=default_weight,
+                            step=5,
+                            key=f"weight_{i}"
+                        )
+                        weight_inputs.append(weight)
+
+                    macro_columns = [
+                        "Calories_per_100g (kcal)",
+                        "Protein_per_100g (g)",
+                        "Fat_per_100g (g)",
+                        "Carbs_per_100g (g)",
+                        "Sugars_per_100g (g)",
+                        "Sodium_per_100g (mg)"
+                    ]
+
+                    for col in macro_columns:
+                        selected_df[col] = pd.to_numeric(selected_df[col], errors='coerce').fillna(0)
+
+                    # Compute macros based on user input
+                    macro_table = pd.DataFrame({
+                        "Item": selected_df["Item"],
+                        "Calories": (selected_df["Calories_per_100g (kcal)"] * pd.Series(weight_inputs) / 100).fillna(0).astype(int),
+                        "Protein": (selected_df["Protein_per_100g (g)"] * pd.Series(weight_inputs) / 100).fillna(0).astype(int),
+                        "Fats": (selected_df["Fat_per_100g (g)"] * pd.Series(weight_inputs) / 100).fillna(0).astype(int),
+                        "Carbohydrates": (selected_df["Carbs_per_100g (g)"] * pd.Series(weight_inputs) / 100).fillna(0).astype(int),
+                        "Sugar": (selected_df["Sugars_per_100g (g)"] * pd.Series(weight_inputs) / 100).fillna(0).astype(int),
+                        "Sodium (mg)": (selected_df["Sodium_per_100g (mg)"] * pd.Series(weight_inputs) / 100).fillna(0).astype(int),
+                    })
+
+                    st.markdown("### 🥗 Macros Table")
+                    st.dataframe(macro_table.style.format("{:.2f}"))
+
+                    st.markdown("### 🔢 Total Macros")
+                    st.write({
+                        "Calories (kcal)": macro_table["Calories"].sum().round(1),
+                        "Protein (g)": macro_table["Protein"].sum().round(1),
+                        "Fats (g)": macro_table["Fats"].sum().round(1),
+                        "Carbohydrates (g)": macro_table["Carbohydrates"].sum().round(1),
+                        "Sugar (g)": macro_table["Sugar"].sum().round(1),
+                        "Sodium (mg)": macro_table["Sodium (mg)"].sum().round(1),
+                    })
 
