@@ -5,3 +5,6 @@ bcrypt
 streamlit
 firebase_admin
 streamlit_authenticator
+gspread
+google.oauth2.service_account
+st_aggrid
