@@ -6,5 +6,5 @@ streamlit
 firebase_admin
 streamlit_authenticator
 gspread
-GridOptionsBuilder
+oauth2client
 
