@@ -172,9 +172,10 @@ else:
                 lean_mass = body_com_merged["lean_mass"].dropna()
                 fat_mass = body_com_merged["fat_mass"].dropna()
 
-                st.write("### Body Composition")
+                
                 a, b = st.columns(2)
                 if not bmr.empty:
+                    st.write("### Body Composition")
                     a.metric(label="**BMR**", value=body_com_merged["bmr"].round(0).dropna().iloc[-1],
                              delta=None,
                              delta_color="normal", help=None,
@@ -207,9 +208,9 @@ else:
                              delta=None,
                              delta_color="normal", help=None,
                              label_visibility="visible", border=True)
-
-                st.write("### Macros Goals")
+                
                 if not goal_calories.empty:
+                    st.write("### Macros Goals")
                     st.metric(label="**Calories Goal**", value=body_com_merged["goal_cal"].round(0).dropna().iloc[-1],
                               delta=None,
                               delta_color="normal", help=None,
