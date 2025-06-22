@@ -7,4 +7,4 @@ firebase_admin
 streamlit_authenticator
 gspread
 oauth2client
-st_aggrid
+streamlit-aggrid
